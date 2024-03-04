@@ -75,3 +75,23 @@ func TestFun3(t *testing.T) {
 	assert.Equal(t, x2val, x2.f)
 	assert.InDelta(t, -0.00794, x2.d, tol)
 }
+
+func TestFun4(t *testing.T) {
+	x1val := 2.0
+	x2val := 2.0
+
+	x1 := NewVariable(x1val, nil, "")
+	x2 := NewVariable(x2val, nil, "")
+
+	trm1 := x1.Cos()
+	trm2 := x2.Abs()
+	trm3 := trm1.Mul(trm2)
+
+	trm3.Backward()
+
+	assert.Equal(t, x1val, x1.f)
+	assert.InDelta(t, -1.81859, x1.d, tol)
+
+	assert.Equal(t, x2val, x2.f)
+	assert.InDelta(t, -0.41615, x2.d, tol)
+}
