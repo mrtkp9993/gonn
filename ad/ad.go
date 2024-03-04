@@ -9,7 +9,7 @@ import (
 	"math"
 )
 
-var identifier = 1
+var identifier int64 = 1
 
 type Variable struct {
 	f          float64
@@ -87,7 +87,7 @@ func (v *Variable) Mul(other *Variable) *Variable {
 }
 
 func (v *Variable) Pow(other float64) *Variable {
-	out := NewVariable(math.Pow(v.d, other), []*Variable{v}, fmt.Sprintf("**%f", other))
+	out := NewVariable(math.Pow(v.f, other), []*Variable{v}, fmt.Sprintf("**%f", other))
 	out.backwardfn = func() {
 		v.d += other * math.Pow(v.f, other-1) * out.d
 	}
@@ -109,7 +109,7 @@ func (v *Variable) Log() *Variable {
 func (v *Variable) Logb(base float64) *Variable {
 	out := NewVariable(math.Log(v.f)/math.Log(base), []*Variable{v}, fmt.Sprintf("log_(%f)", base))
 	out.backwardfn = func() {
-		v.d += (-math.Log(base) / (v.f * math.Log(math.Pow(v.f, 2)))) * out.d
+		v.d += (1 / (v.f * math.Log(base))) * out.d
 	}
 	return out
 }
