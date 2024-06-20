@@ -266,21 +266,19 @@ func (v *Variable) ErfcInv() *Variable {
 	return out
 }
 
-func (v *Variable) Backward() {
-	topo := []*Variable{}
-	visited := map[*Variable]bool{}
-
-	var buildTopo func(*Variable)
-	buildTopo = func(v *Variable) {
-		if !visited[v] {
-			visited[v] = true
-			for _, child := range v.GetParents() {
-				buildTopo(child)
-			}
-			topo = append(topo, v)
+func buildTopo(v *Variable, topo []*Variable, visited map[*Variable]bool) []*Variable {
+	if !visited[v] {
+		visited[v] = true
+		for _, child := range v.GetParents() {
+			topo = buildTopo(child, topo, visited)
 		}
+		topo = append(topo, v)
 	}
-	buildTopo(v)
+	return topo
+}
+
+func (v *Variable) Backward() {
+	topo := buildTopo(v, []*Variable{}, map[*Variable]bool{})
 
 	v.d = 1
 
