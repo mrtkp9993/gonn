@@ -39,12 +39,32 @@ func (v *Variable) GetData() float64 {
 	return v.f
 }
 
+func (v *Variable) SetData(f float64) {
+	v.f = f
+}
+
 func (v *Variable) GetGrad() float64 {
 	return v.d
 }
 
+func (v *Variable) SetGrad(d float64) {
+	v.d = d
+}
+
 func (v *Variable) GetOp() string {
 	return v.op
+}
+
+func (v *Variable) SetOp(op string) {
+	v.op = op
+}
+
+func (v *Variable) GetBackwardfn() func() {
+	return v.backwardfn
+}
+
+func (v *Variable) SetBackwardfn(backwardfn func()) {
+	v.backwardfn = backwardfn
 }
 
 func (v *Variable) GetName() string {
@@ -284,10 +304,63 @@ func (v *Variable) Backward() {
 
 	for i := len(topo) - 1; i >= 0; i-- {
 		if topo[i].backwardfn != nil {
-			fmt.Println(topo[i].String())
 			topo[i].backwardfn()
-		} else {
-			fmt.Println(topo[i].String())
 		}
 	}
+}
+
+// ACTIVATIONS
+// Tanh were already implemented above
+func (x *Variable) Identity() *Variable {
+	out := NewVariable(
+		x.GetData(),
+		[]*Variable{x},
+		"Identity",
+	)
+	out.backwardfn = func() {
+		x.SetGrad(x.GetGrad() + out.GetGrad())
+	}
+	return out
+}
+
+func (x *Variable) Sigmoid() *Variable {
+	out := NewVariable(
+		1/(1+math.Exp(-x.GetData())),
+		[]*Variable{x},
+		"Sigmoid",
+	)
+	out.backwardfn = func() {
+		x.SetGrad(x.GetGrad() + out.GetGrad()*(1-out.GetData())*out.GetData())
+	}
+	return out
+}
+
+func (x *Variable) ReLU() *Variable {
+	out := NewVariable(
+		math.Max(0, x.GetData()),
+		[]*Variable{x},
+		"ReLU",
+	)
+	out.backwardfn = func() {
+		if x.GetData() > 0 {
+			x.SetGrad(x.GetGrad() + out.GetGrad())
+		}
+	}
+	return out
+}
+
+func (x *Variable) LeakyReLU(alpha float64) *Variable {
+	out := NewVariable(
+		math.Max(0, x.GetData())+alpha*math.Min(0, x.GetData()),
+		[]*Variable{x},
+		"LeakyReLU",
+	)
+	out.backwardfn = func() {
+		if x.GetData() > 0 {
+			x.SetGrad(x.GetGrad() + out.GetGrad())
+		} else {
+			x.SetGrad(x.GetGrad() + alpha*out.GetGrad())
+		}
+	}
+	return out
 }

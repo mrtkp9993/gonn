@@ -95,3 +95,88 @@ func TestFun4(t *testing.T) {
 	assert.Equal(t, x2val, x2.f)
 	assert.InDelta(t, -0.41615, x2.d, tol)
 }
+
+// ACTIVATION TESTS
+func TestIdentity(t *testing.T) {
+	xval := 3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.Identity()
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 1.0, x.GetGrad(), tol)
+}
+
+func TestSigmoid(t *testing.T) {
+	xval := 3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.Sigmoid()
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 0.0451767, x.GetGrad(), tol)
+}
+
+func TestReLU1(t *testing.T) {
+	xval := 3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.ReLU()
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 1.0, x.GetGrad(), tol)
+}
+
+func TestReLU2(t *testing.T) {
+	xval := -3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.ReLU()
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 0.0, x.GetGrad(), tol)
+}
+
+func TestTanh(t *testing.T) {
+	xval := 3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.Tanh()
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 0.009866, x.GetGrad(), tol)
+}
+
+func TestLeakyReLU1(t *testing.T) {
+	xval := 3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.LeakyReLU(0.1)
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 1.0, x.GetGrad(), tol)
+}
+
+func TestLeakyReLU2(t *testing.T) {
+	xval := -3.0
+
+	x := NewVariable(xval, nil, "x")
+	y := x.LeakyReLU(0.1)
+
+	y.Backward()
+
+	assert.Equal(t, xval, x.GetData())
+	assert.InDelta(t, 0.1, x.GetGrad(), tol)
+}
